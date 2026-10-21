@@ -1,42 +1,27 @@
-import glob
 import os
 import pandas as pd
 
-# Procura qualquer arquivo Excel (.xlsx) na pasta atual ou na pasta 'dados'
-arquivos_excel = glob.glob("*.xlsx") + glob.glob("dados/*.xlsx")
+caminho_arquivo = os.path.join(
+    os.path.dirname(__file__), "..", "dados", "resultados.xlsx"
+)
 
-if not arquivos_excel:
-  print(
-      "ERRO: Nenhum arquivo Excel (.xlsx) foi encontrado na pasta nem na pasta"
-      " 'dados'."
-  )
+if not os.path.exists(caminho_arquivo):
+  print(f"ERRO: O arquivo 'resultados.xlsx' não foi encontrado na pasta 'dados'.")
 else:
-  # Pega o primeiro arquivo encontrado
-  caminho_arquivo = arquivos_excel[0]
-  print(f"[Info] Lendo o arquivo: {caminho_arquivo}")
-
   df = pd.read_excel(caminho_arquivo)
 
-  # Mostra as linhas lidas para sabermos se o Excel salvou os dados
-  print("\nLinhas encontradas na planilha:")
-  print(df)
-  print("-" * 40)
-
+  print("--- SISTEMA DE CONSULTA E MÉDIAS ---")
   ra_busca = input("Digite o RA do aluno para consulta: ").strip()
 
-  # Filtra o RA (convertendo para string e removendo espaços)
   df["RA"] = df["RA"].astype(str).str.strip()
   aluno = df[df["RA"] == ra_busca]
 
   if aluno.empty:
-    print(
-        f"Nenhum registro encontrado para o RA '{ra_busca}'. (Confira se salvou"
-        " o Excel!)"
-    )
+    print(f"Nenhum registro encontrado para o RA '{ra_busca}'.")
   else:
-    print("\n" + "=" * 40)
-    print("        RESULTADO DO ALUNO        ")
-    print("=" * 40)
+    print("\n" + "=" * 45)
+    print("        RELATÓRIO DE DESEMPENHO        ")
+    print("=" * 45)
 
     for index, row in aluno.iterrows():
       nome = row.get("Nome", "Não informado")
@@ -47,18 +32,23 @@ else:
       tf01 = float(row.get("TF01", 0.0) or 0.0)
       tf02 = float(row.get("TF02", 0.0) or 0.0)
 
-      media = (nota1 + nota2 + tf01 + tf02) / 4.0
-      status = "APROVADO" if media >= 6.0 else "REPROVADO"
+      media_provas = (nota1 + nota2) / 2.0
+      media_tfs = (tf01 + tf02) / 2.0
+      media_final = (nota1 + nota2 + tf01 + tf02) / 4.0
 
-      print(f"Nome   : {nome}")
-      print(f"RA     : {ra}")
-      print("-" * 40)
-      print(f"Nota 1 : {nota1:.2f}")
-      print(f"Nota 2 : {nota2:.2f}")
-      print(f"TF 01  : {tf01:.2f}")
-      print(f"TF 02  : {tf02:.2f}")
-      print("-" * 40)
-      print(f"Média Final : {media:.2f}")
+      status = "APROVADO" if media_final >= 6.0 else "REPROVADO"
+
+      print(f"Nome        : {nome}")
+      print(f"RA          : {ra}")
+      print("-" * 45)
+      print(f"Nota 1      : {nota1:.2f}")
+      print(f"Nota 2      : {nota2:.2f}")
+      print(f"Média Provas: {media_provas:.2f}")
+      print("-" * 45)
+      print(f"TF 01       : {tf01:.2f}")
+      print(f"TF 02       : {tf02:.2f}")
+      print(f"Média TFs   : {media_tfs:.2f}")
+      print("-" * 45)
+      print(f"Média Final : {media_final:.2f}")
       print(f"Situação    : {status}")
-      print("=" * 40 + "\n")
-      
+      print("=" * 45 + "\n")
